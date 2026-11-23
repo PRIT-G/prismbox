@@ -84,6 +84,9 @@ window.addEventListener('message', (event) => {
   } else if (m.type === 'gizmo') {
     bus.gizmo = m.mode;
     bus.handler?.(m);
+  } else if (m.type === 'snap') {
+    bus.snap = m.enabled;
+    bus.handler?.(m);
   } else bus.handler?.(m);
 });
 

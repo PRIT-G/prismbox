@@ -96,6 +96,9 @@ code, pre { font-family: var(--mono); font-size: 12px; }
 .segmented button { white-space: nowrap; height: 24px; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
 .segmented button:hover { color: var(--text); }
 .segmented button.on { background: var(--raised); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
+.vp-btn { white-space: nowrap; height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--muted); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; transition: background 0.12s, color 0.12s, border-color 0.12s; }
+.vp-btn:hover { color: var(--text); background: var(--raised); }
+.vp-btn.on { background: var(--raised); color: var(--text); border-color: var(--border-strong); box-shadow: 0 0 0 1px var(--border-strong); }
 .chip { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); padding: 3px 11px; border-radius: 999px; font-size: 12px; pointer-events: none; background: rgba(16, 17, 23, 0.8); border: 1px solid var(--border); color: var(--muted); }
 .chip.paused { color: var(--accent-text); border-color: rgba(124, 108, 255, 0.4); }
 .chip.live { color: var(--ok); border-color: rgba(62, 207, 142, 0.35); }

@@ -9,6 +9,12 @@ import { fileURLToPath } from 'node:url';
 export default function setup(): void {
   const bridge = fileURLToPath(new URL('..', import.meta.url));
   const core = fileURLToPath(new URL('../../core', import.meta.url));
-  execSync('pnpm exec tsup', { cwd: core, stdio: 'ignore' });
-  execSync('pnpm exec tsup', { cwd: bridge, stdio: 'ignore' });
+  try {
+    execSync('pnpm exec tsup', { cwd: core, stdio: 'ignore' });
+    execSync('pnpm exec tsup', { cwd: bridge, stdio: 'ignore' });
+  } catch {
+    const tsupBin = fileURLToPath(new URL('../../../node_modules/tsup/dist/cli-default.js', import.meta.url));
+    execSync(`node "${tsupBin}"`, { cwd: core, stdio: 'ignore' });
+    execSync(`node "${tsupBin}"`, { cwd: bridge, stdio: 'ignore' });
+  }
 }

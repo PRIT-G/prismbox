@@ -9,6 +9,9 @@ export type ToSandbox =
   | { type: 'select'; tag: string | null }
   | { type: 'view'; mode: ViewMode }
   | { type: 'gizmo'; mode: GizmoMode }
+  | { type: 'snap'; enabled: boolean }
+  | { type: 'resetCamera' }
+  | { type: 'focus' }
   | { type: 'live'; tag: string; prop: string; value: unknown; uniform?: boolean };
 
 export interface TransformChange {
@@ -75,6 +78,12 @@ export function parseToSandbox(data: unknown): ToSandbox | null {
       return data.mode === 'scene' || data.mode === 'free' ? { type: 'view', mode: data.mode } : null;
     case 'gizmo':
       return data.mode === 'translate' || data.mode === 'rotate' || data.mode === 'scale' ? { type: 'gizmo', mode: data.mode } : null;
+    case 'snap':
+      return typeof data.enabled === 'boolean' ? { type: 'snap', enabled: data.enabled } : null;
+    case 'resetCamera':
+      return { type: 'resetCamera' };
+    case 'focus':
+      return { type: 'focus' };
     case 'live':
       return typeof data.tag === 'string' && typeof data.prop === 'string' ? { type: 'live', tag: data.tag, prop: data.prop, value: data.value, uniform: data.uniform === true } : null;
     default:

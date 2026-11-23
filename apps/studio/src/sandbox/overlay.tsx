@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import type { ToSandbox, TransformChange } from '../protocol';
 import { bus } from './bus';
+import { computeFocusCamera } from './camera';
 import { ClockFreezer } from './clock';
 
 const ACCENT = '#7c6cff';
@@ -71,11 +72,20 @@ export function __PrismOverlay() {
   useEffect(() => {
     const dom = gl.domElement;
     const sceneCam = get().camera;
+    const initialCamPos = sceneCam.position.clone();
+    const initialCamRot = sceneCam.rotation.clone();
     let freeCam: THREE.Camera | null = null;
     let orbit: OrbitControls | null = null;
 
     const tc = new TransformControls(sceneCam, dom); // registers its listeners first
     tc.size = 0.85;
+
+    function setSnap(enabled: boolean) {
+      tc.setTranslationSnap(enabled ? 0.1 : null);
+      tc.setRotationSnap(enabled ? THREE.MathUtils.degToRad(15) : null);
+      tc.setScaleSnap(enabled ? 0.1 : null);
+    }
+    setSnap(bus.snap);
     const helper = tc.getHelper();
     helper.userData.prismHelper = true;
     scene.add(helper);
@@ -236,6 +246,35 @@ export function __PrismOverlay() {
         case 'gizmo':
           bus.gizmo = m.mode;
           tc.setMode(m.mode);
+          break;
+        case 'snap':
+          bus.snap = m.enabled;
+          setSnap(m.enabled);
+          break;
+        case 'resetCamera':
+          if (bus.view === 'free' && freeCam && orbit) {
+            freeCam.position.copy(initialCamPos);
+            freeCam.rotation.copy(initialCamRot);
+            orbit.target.set(0, 0, 0);
+            orbit.update();
+          } else {
+            sceneCam.position.copy(initialCamPos);
+            sceneCam.rotation.copy(initialCamRot);
+          }
+          break;
+        case 'focus':
+          if (selected) {
+            const curCam = get().camera;
+            const framing = computeFocusCamera(selected, curCam);
+            if (bus.view === 'free' && freeCam && orbit) {
+              freeCam.position.copy(framing.position);
+              orbit.target.copy(framing.target);
+              orbit.update();
+            } else {
+              curCam.position.copy(framing.position);
+              curCam.lookAt(framing.target);
+            }
+          }
           break;
         case 'live':
           live(m);

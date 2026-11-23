@@ -7,6 +7,7 @@ export const bus: {
   selected: string | null;
   view: ViewMode;
   gizmo: GizmoMode;
+  snap: boolean;
   /** Set by the overlay while mounted; the shell forwards messages to it. */
   handler: ((m: ToSandbox) => void) | null;
 } = {
@@ -15,5 +16,6 @@ export const bus: {
   selected: null,
   view: 'scene',
   gizmo: 'translate',
+  snap: false,
   handler: null,
 };

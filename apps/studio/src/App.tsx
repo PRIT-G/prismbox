@@ -44,6 +44,7 @@ export function App() {
   const [armed, setArmed] = useState(true);
   const [view, setView] = useState<ViewMode>('scene');
   const [gizmo, setGizmo] = useState<GizmoMode>('translate');
+  const [snap, setSnap] = useState(false);
   const [status, setStatus] = useState<'booting' | 'loading' | 'ready' | 'error'>('booting');
   const [sandboxError, setSandboxError] = useState<string | null>(null);
   const [frozen, setFrozen] = useState(false);
@@ -67,8 +68,8 @@ export function App() {
   }, []);
 
   // keep the latest values reachable from the (stable) message listener
-  const latest = useRef({ scene, selectedTag, session });
-  latest.current = { scene, selectedTag, session };
+  const latest = useRef({ scene, selectedTag, session, selectedId });
+  latest.current = { scene, selectedTag, session, selectedId };
 
   const commit = useCallback((op: EditOp) => setSession((s) => applyEdit(s, op)), []);
 
@@ -160,6 +161,8 @@ export function App() {
   const onArm = useCallback((v: boolean) => { setArmed(v); post({ type: 'arm', value: v }); }, [post]);
   const onView = useCallback((v: ViewMode) => { setView(v); post({ type: 'view', mode: v }); }, [post]);
   const onGizmo = useCallback((g: GizmoMode) => { setGizmo(g); post({ type: 'gizmo', mode: g }); }, [post]);
+  const onSnap = useCallback((s: boolean) => { setSnap(s); post({ type: 'snap', enabled: s }); }, [post]);
+  const onResetCamera = useCallback(() => { post({ type: 'resetCamera' }); }, [post]);
 
   const onTemplate = useCallback((id: string) => {
     setSelectedId(null);
@@ -198,8 +201,19 @@ export function App() {
     } else if (e.mod && k === 'y') {
       e.preventDefault();
       setSession((s) => redo(s));
-    } else if (!e.mod && ['w', 'e', 'r'].includes(k)) {
-      onGizmo(({ w: 'translate', e: 'rotate', r: 'scale' } as const)[k as 'w' | 'e' | 'r']);
+    } else if (!e.mod) {
+      const hasSelection = Boolean(latest.current.selectedId);
+      if (hasSelection) {
+        if (k === 'g' || k === 'w') {
+          onGizmo('translate');
+        } else if (k === 'r' || k === 'e') {
+          onGizmo('rotate');
+        } else if (k === 's') {
+          onGizmo('scale');
+        } else if (k === 'f') {
+          post({ type: 'focus' });
+        }
+      }
     }
   };
 
@@ -234,9 +248,12 @@ export function App() {
         armed={armed}
         view={view}
         gizmo={gizmo}
+        snap={snap}
         onArm={onArm}
         onView={onView}
         onGizmo={onGizmo}
+        onSnap={onSnap}
+        onResetCamera={onResetCamera}
       />
       <Inspector node={selected} edit={selectedEntry?.edit ?? null} file={FILE_NAME} onLive={live} onCommit={edit} />
       <DiffStrip
